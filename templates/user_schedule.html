@@ -1,0 +1,84 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>내 상담 일정</h2>
+        <a href="{% url 'create_consultation' %}" class="btn btn-primary">상담 신청</a>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0">예정된 상담</h5>
+        </div>
+        <div class="card-body">
+            {% if upcoming_consultations %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>날짜</th>
+                                <th>시간</th>
+                                <th>상태</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for consultation in upcoming_consultations %}
+                            <tr>
+                                <td>{{ consultation.start_time|date:"Y년 m월 d일" }}</td>
+                                <td>{{ consultation.start_time|time:"H:i" }}</td>
+                                <td>
+                                    {% if consultation.status == 'PENDING' %}
+                                        <span class="badge bg-warning">대기중</span>
+                                    {% elif consultation.status == 'CONFIRMED' %}
+                                        <span class="badge bg-dark">확정</span>
+                                    {% elif consultation.status == 'COMPLETED' %}
+                                        <span class="badge bg-primary">완료</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary">취소됨</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <p class="text-muted">예정된 상담 일정이 없습니다.</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header bg-secondary text-white">
+            <h5 class="mb-0">지난 상담</h5>
+        </div>
+        <div class="card-body">
+            {% if past_consultations %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>날짜</th>
+                                <th>시간</th>
+                                <th>상태</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for consultation in past_consultations %}
+                            <tr>
+                                <td>{{ consultation.start_time|date:"Y년 m월 d일" }}</td>
+                                <td>{{ consultation.start_time|time:"H:i" }}</td>
+                                <td><span class="badge bg-secondary">완료</span></td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <p class="text-muted">지난 상담 기록이 없습니다.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

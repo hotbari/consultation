@@ -1,0 +1,191 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <h2>관리자 상담 일정 관리</h2>
+            <p>트랙: {{ selected_track }}</p>
+        </div>
+    </div>
+
+    <!-- 필터링 옵션 -->
+    <div class="card mb-4">
+        <div class="card-header bg-light">
+            <h5>필터링 옵션</h5>
+        </div>
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <div class="col-md-4">
+                    <label for="cohort" class="form-label">기수</label>
+                    <select name="cohort" id="cohort" class="form-select">
+                        <option value="">전체</option>
+                        {% for cohort in cohorts %}
+                            <option value="{{ cohort }}" {% if selected_cohort == cohort|stringformat:"s" %}selected{% endif %}>{{ cohort }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div class="col-md-4">
+                    <label for="date" class="form-label">날짜</label>
+                    <input type="date" name="date" id="date" class="form-control" value="{{ selected_date }}">
+                </div>
+                
+                <div class="col-md-4 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary me-2">필터링</button>
+                    <a href="{% url 'admin_schedule' %}" class="btn btn-secondary">초기화</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 액션 버튼 -->
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <a href="{% url 'admin_create_consultation' %}" class="btn btn-success">
+                <i class="bi bi-plus-circle"></i> 새 상담 일정 만들기
+            </a>
+        </div>
+    </div>
+
+    <!-- 예정된 상담 -->
+    <div class="card mb-4">
+        <div class="card-header bg-primary text-white">
+            <h5>예정된 상담</h5>
+        </div>
+        <div class="card-body">
+            {% if upcoming_consultations %}
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover">
+                        <thead>
+                            <tr>
+                                <th>날짜</th>
+                                <th>시간</th>
+                                <th>학생</th>
+                                <th>기수</th>
+                                <th>상태</th>
+                                <th>액션</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for consultation in upcoming_consultations %}
+                                <tr>
+                                    <td>{{ consultation.start_time|date:"Y-m-d" }}</td>
+                                    <td>{{ consultation.start_time|time:"H:i" }}</td>
+                                    <td>
+                                        {% if consultation.user %}
+                                            {{ consultation.user.name }}
+                                        {% else %}
+                                            <span class="badge bg-secondary">미배정</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if consultation.user %}
+                                            {{ consultation.user.cohort }}
+                                        {% else %}
+                                            -
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if consultation.user %}
+                                            {% if consultation.status == 'PENDING' %}
+                                                <span class="badge bg-warning">대기중</span>
+                                                <div class="status-btn-group">
+                                                    <a href="{% url 'update_consultation_status' consultation.pk 'CONFIRMED' %}" 
+                                                       class="btn btn-dark">확정</a>
+                                                    <a href="{% url 'update_consultation_status' consultation.pk 'CANCELLED' %}" 
+                                                       class="btn btn-secondary">취소</a>
+                                                </div>
+                                            {% elif consultation.status == 'CONFIRMED' %}
+                                                <span class="badge bg-dark">확정</span>
+                                                <div class="status-btn-group">
+                                                    <a href="{% url 'update_consultation_status' consultation.pk 'COMPLETED' %}" 
+                                                       class="btn btn-primary">완료</a>
+                                                    <a href="{% url 'update_consultation_status' consultation.pk 'CANCELLED' %}" 
+                                                       class="btn btn-secondary">취소</a>
+                                                </div>
+                                            {% elif consultation.status == 'COMPLETED' %}
+                                                <span class="badge bg-primary">완료</span>
+                                            {% else %}
+                                                <span class="badge bg-secondary">취소됨</span>
+                                            {% endif %}
+                                        {% else %}
+                                            <span class="badge bg-secondary">미배정</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <a href="{% url 'assign_consultation' consultation.pk %}" class="btn btn-sm btn-primary">
+                                            {% if consultation.user %}수정{% else %}배정{% endif %}
+                                        </a>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="alert alert-info">
+                    예정된 상담이 없습니다.
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- 과거 상담 -->
+    <div class="card">
+        <div class="card-header bg-secondary text-white">
+            <h5>과거 상담</h5>
+        </div>
+        <div class="card-body">
+            {% if past_consultations %}
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover">
+                        <thead>
+                            <tr>
+                                <th>날짜</th>
+                                <th>시간</th>
+                                <th>학생</th>
+                                <th>기수</th>
+                                <th>상태</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for consultation in past_consultations %}
+                                <tr>
+                                    <td>{{ consultation.start_time|date:"Y-m-d" }}</td>
+                                    <td>{{ consultation.start_time|time:"H:i" }} - {{ consultation.end_time|time:"H:i" }}</td>
+                                    <td>
+                                        {% if consultation.user %}
+                                            {{ consultation.user.name }}
+                                        {% else %}
+                                            <span class="badge bg-secondary">미배정</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if consultation.user %}
+                                            {{ consultation.user.cohort }}
+                                        {% else %}
+                                            -
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if consultation.user %}
+                                            <span class="badge bg-secondary">완료</span>
+                                        {% else %}
+                                            <span class="badge bg-danger">미사용</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="alert alert-info">
+                    과거 상담 기록이 없습니다.
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

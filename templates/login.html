@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h4>로그인</h4>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    <div class="mb-3">
+                        <label for="id_username" class="form-label">이메일</label>
+                        <input type="email" name="username" class="form-control" id="id_username" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="id_password" class="form-label">비밀번호</label>
+                        <input type="password" name="password" class="form-control" id="id_password" required>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary">로그인</button>
+                </form>
+                
+                <hr>
+                <p>계정이 없으신가요?</p>
+                <a href="{% url 'register' %}" class="btn btn-outline-secondary">학생 회원가입</a>
+                <a href="{% url 'register_admin' %}" class="btn btn-outline-secondary">관리자 회원가입</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

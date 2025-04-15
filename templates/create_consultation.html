@@ -1,0 +1,105 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    {% if is_update %}
+                        <h3>상담 일정 수정</h3>
+                    {% elif is_admin %}
+                        <h3>관리자 상담 일정 생성</h3>
+                    {% else %}
+                        <h3>상담 신청</h3>
+                    {% endif %}
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <div class="form-group mb-3">
+                            <label for="{{ form.start_time.id_for_label }}">{{ form.start_time.label }}</label>
+                            <div class="form-control-wrapper">
+                                {{ form.start_time }}
+                            </div>
+                            {% if form.start_time.errors %}
+                                <div class="text-danger">
+                                    {% for error in form.start_time.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        {% if is_admin %}
+                        <div class="form-group mb-3">
+                            <label for="{{ form.user.id_for_label }}">{{ form.user.label }}</label>
+                            <div class="form-control-wrapper">
+                                {{ form.user }}
+                            </div>
+                            {% if form.user.errors %}
+                                <div class="text-danger">
+                                    {% for error in form.user.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            <small class="form-text text-muted">
+                                {% if is_update %}
+                                    학생을 배정하거나 변경할 수 있습니다. 비워두면 빈 상담 시간으로 설정됩니다.
+                                {% else %}
+                                    학생을 배정하거나 비워둘 수 있습니다. 비워두면 빈 상담 시간으로 설정됩니다.
+                                {% endif %}
+                            </small>
+                        </div>
+                        {% endif %}
+                        
+                        {% if form.non_field_errors %}
+                            <div class="alert alert-danger">
+                                {% for error in form.non_field_errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                        
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <a href="{% if is_admin %}{% url 'admin_schedule' %}{% else %}{% url 'user_schedule' %}{% endif %}" class="btn btn-secondary me-md-2">취소</a>
+                            <button type="submit" class="btn btn-primary">
+                                {% if is_update %}
+                                    수정하기
+                                {% else %}
+                                    {% if is_admin %}
+                                        일정 생성
+                                    {% else %}
+                                        상담 신청
+                                    {% endif %}
+                                {% endif %}
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Add Bootstrap styling to form elements */
+    .form-control-wrapper select,
+    .form-control-wrapper input {
+        display: block;
+        width: 100%;
+        padding: 0.375rem 0.75rem;
+        font-size: 1rem;
+        font-weight: 400;
+        line-height: 1.5;
+        color: #212529;
+        background-color: #fff;
+        background-clip: padding-box;
+        border: 1px solid #ced4da;
+        border-radius: 0.25rem;
+        transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+    }
+</style>
+{% endblock %}
